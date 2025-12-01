@@ -1,6 +1,9 @@
 """
-RISC-V Assembly to Hexa/Binary Decimal Converter
-Converts RISC-V assembly instructions to hexadecimal machine code
+32bit RISC-V Assembly to Hexa and Binary Decimal Converter
+Converts 32bit RISC-V assembly instructions to hexadecimal and binary machine code
+
+Date: 1st Dec 2025
+Author: Sahil Rajwar
 """
 from multipledispatch import dispatch
 
