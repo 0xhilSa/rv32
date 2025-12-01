@@ -2,6 +2,8 @@
 RISC-V Assembly to Hexa/Binary Decimal Converter
 Converts RISC-V assembly instructions to hexadecimal machine code
 """
+from multipledispatch import dispatch
+
 class RISCVAssembler:
   def __init__(self):
     self.reg_map = {
@@ -16,7 +18,38 @@ class RISCVAssembler:
       'x26': 26, 's10': 26, 'x27': 27, 's11': 27, 'x28': 28, 't3': 28,
       'x29': 29, 't4': 29, 'x30': 30, 't5': 30, 'x31': 31, 't6': 31
     }
+    self.instructions = None
     self.labels = {}
+
+  @dispatch(str)
+  def __getitem__(self, address): #type: ignore
+    if self.instructions is None: raise ValueError("No instructions were given!")
+    for line in self.instructions:
+      if line["address"] == address:
+        string = f"""
+{'='*105}
+{'Line':<6} {'Address':<12} {'Instruction':<30} {'Hex Code':<12} {'Binary Code':<12} \t\t\t   {'Status':<20}
+{'='*105}
+{line['line']:<6} {line['address']:<12} {line['instruction']:<30} {line['hex']:<12} {line['binary']:<12}   {'OK':<20}
+        """
+        return string
+      else: continue
+    raise ValueError(f"Invalid Address: {address}")
+
+  @dispatch(int)
+  def __getitem__(self, line_no):
+    if self.instructions is None: raise ValueError("No instructions were given!")
+    for line in self.instructions:
+      if int(line["line"]) == line_no:
+        string = f"""
+{'='*105}
+{'Line':<6} {'Address':<12} {'Instruction':<30} {'Hex Code':<12} {'Binary Code':<12} \t\t\t   {'Status':<20}
+{'='*105}
+{line['line']:<6} {line['address']:<12} {line['instruction']:<30} {line['hex']:<12} {line['binary']:<12}   {'OK':<20}
+        """
+        return string
+      else: continue
+    raise ValueError(f"Number Line: {line_no}")
 
   def get_reg(self, reg_str):
     """Convert register name to number"""
@@ -202,7 +235,7 @@ class RISCVAssembler:
         machine_code = self.parse_instruction(original_line, addr)
         if machine_code is not None:
           hex_code = f"0x{machine_code:08X}"
-          binary_code = f"{machine_code:032b}"
+          binary_code = f"0b{machine_code:032b}"
           results.append({
             'line': line_num,
             'address': f"0x{addr:08X}",
@@ -221,17 +254,18 @@ class RISCVAssembler:
           'binary': None,
           'error': str(e)
         })
-    return results
+    self.instructions = results
+    return self.instructions
 
 def print_results(results):
   """Print assembly results in a formatted table"""
   print("\n" + "="*105)
-  print(f"{'Line':<6} {'Address':<12} {'Instruction':<30} {'Hex Code':<12} {'Binary Code':<12} \t\t\t {'Status':<20}")
+  print(f"{'Line':<6} {'Address':<12} {'Instruction':<30} {'Hex Code':<12} {'Binary Code':<12} \t\t\t   {'Status':<20}")
   print("="*105)
   for result in results:
     if result['error']: print(f"{result['line']:<6} {result['address']:<12} {result['instruction']:<30} {'ERROR':<12} {result['error']}")
     else:
-      print(f"{result['line']:<6} {result['address']:<12} {result['instruction']:<30} {result['hex']:<12} {result['binary']:<12} {'✓':<20}")
+      print(f"{result['line']:<6} {result['address']:<12} {result['instruction']:<30} {result['hex']:<12} {result['binary']:<12}   {'OK':<20}")
   print("="*105 + "\n")
 
 def export_hex(results, filename="a.hex"):

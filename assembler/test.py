@@ -1,4 +1,4 @@
-from rv32assembler import RISCVAssembler, export_bin, export_hex, print_results
+from rv32assembler import RISCVAssembler, export_bin, export_hex
 
 asm = RISCVAssembler()
 with open("./test.asm", "r") as file:
@@ -6,4 +6,5 @@ with open("./test.asm", "r") as file:
   res = asm.assemble(content)
   export_bin(res)
   export_hex(res)
-  print_results(res)
+print(asm["0x00000008"])
+print(asm[3])
